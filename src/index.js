@@ -8,6 +8,7 @@ import passVert from './scene/shaders/pass.vert'
 import vignetteFrag from './scene/shaders/vignette.frag'
 import Box from "./scene/Box";
 import WireBox from './scene/WireBox'
+import OffCenterCamera from './scene/OffCenterCamera'
 
 window.DEBUG = window.location.search.includes('debug')
 
@@ -46,14 +47,14 @@ const webgl = new WebGLApp({
     }),
     viewOffsetY: State.Slider(0.0, {
       label: 'View Offset Y',
-      min: -0.5,
-      max: 0.5,
+      min: -0.5,// * window.innerHeight / window.innerWidth,
+      max: 0.5,// * window.innerHeight / window.innerWidth,
       step: 0.01
     }),
-    viewOffsetZ: State.Slider(0.3, {
+    viewOffsetZ: State.Slider(1.0, {
       label: 'View Offset Z',
       min: 0.01,
-      max: 1,
+      max: 3.0,
       step: 0.01
     })
   },
@@ -77,13 +78,9 @@ assets.load({ renderer: webgl.renderer }).then(() => {
   // show canvas
   webgl.canvas.style.visibility = ''
 
-  // move the camera behind,
-  // this will be considered only if orbitControls are disabled
-  webgl.camera.position.set(0, 0, 0)
+  webgl.scene.offCenterCamera = new OffCenterCamera(webgl, {});
+  webgl.scene.add(webgl.scene.offCenterCamera);
 
-  // add any "WebGL components" here...
-  // append them to the scene so you can
-  // use them from other components easily
   webgl.scene.box = new WireBox(webgl, {width: 1, height: 1, depth: 4, widthSegments: 10, heightSegments: 10, depthSegments: 40, color: 0xffffff})
   webgl.scene.box.position.z = -2;
   webgl.scene.add(webgl.scene.box)
@@ -110,15 +107,4 @@ assets.load({ renderer: webgl.renderer }).then(() => {
   // start animation loop
   webgl.start()
   webgl.draw()
-
-  webgl.onUpdate((dt, time) => {
-    let ar = webgl.canvas.height / webgl.canvas.width;
-    webgl.camera.setViewOffset(1, ar, -webgl.controls.viewOffsetX, webgl.controls.viewOffsetY, 1, ar);
-    webgl.camera.position.setX(webgl.controls.viewOffsetX / 1);
-    webgl.camera.position.setY(webgl.controls.viewOffsetY * ar);
-
-    webgl.camera.near = webgl.controls.viewOffsetZ;
-    webgl.camera.position.setZ(webgl.controls.viewOffsetZ);
-    webgl.camera.fov = THREE.Math.radToDeg(Math.atan(1.0 / (2.0 * webgl.controls.viewOffsetZ)));
-  })
 })
