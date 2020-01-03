@@ -9,11 +9,12 @@ import vignetteFrag from './scene/shaders/vignette.frag'
 import Box from "./scene/Box";
 import WireBox from './scene/WireBox'
 import OffCenterCamera from './scene/OffCenterCamera'
+import FaceTracker from './scene/FaceTracker'
 
 window.DEBUG = window.location.search.includes('debug')
 
 // grab our canvas
-const canvas = document.querySelector('#app')
+const canvas = document.getElementById('app')
 
 // setup the WebGLRenderer
 const webgl = new WebGLApp({
@@ -56,6 +57,9 @@ const webgl = new WebGLApp({
       min: 0.01,
       max: 3.0,
       step: 0.01
+    }),
+    debugFaceTracker: State.Checkbox(false, {
+      label: 'Debug Face Tracker'
     })
   },
   hideControls: !window.DEBUG,
@@ -74,37 +78,45 @@ if (window.DEBUG) {
 webgl.canvas.style.visibility = 'hidden'
 
 // load any queued assets
-assets.load({ renderer: webgl.renderer }).then(() => {
-  // show canvas
-  webgl.canvas.style.visibility = ''
-
-  webgl.scene.offCenterCamera = new OffCenterCamera(webgl, {});
-  webgl.scene.add(webgl.scene.offCenterCamera);
-
-  webgl.scene.box = new WireBox(webgl, {width: 1, height: 1, depth: 4, widthSegments: 10, heightSegments: 10, depthSegments: 40, color: 0xffffff})
-  webgl.scene.box.position.z = -2;
-  webgl.scene.add(webgl.scene.box)
-
-  // lights and other scene related stuff
-  addSkybox(webgl);
-  addNaturalLight(webgl)
-
-  // postprocessing
-  const vignette = new ShaderPass({
-    vertexShader: passVert,
-    fragmentShader: vignetteFrag,
-    uniforms: {
-      tDiffuse: { type: 't', value: new THREE.Texture() },
-    },
+assets
+  .load({ renderer: webgl.renderer })
+  .then (() => {
+    webgl.scene.facetracker = new FaceTracker(webgl, {})
+    return webgl.scene.facetracker.setup()
   })
-  webgl.composer.addPass(vignette)
+  .then(() => {
+    // show canvas
+    webgl.canvas.style.visibility = ''
 
-  // add the save screenshot button
-  if (window.DEBUG) {
-    addScreenshotButton(webgl)
-  }
+    webgl.scene.add(webgl.scene.facetracker);
 
-  // start animation loop
-  webgl.start()
-  webgl.draw()
-})
+    webgl.scene.offCenterCamera = new OffCenterCamera(webgl, {});
+    webgl.scene.add(webgl.scene.offCenterCamera);
+
+    webgl.scene.box = new WireBox(webgl, {width: 1, height: 1, depth: 4, widthSegments: 10, heightSegments: 10, depthSegments: 40, color: 0xffffff})
+    webgl.scene.box.position.z = -2;
+    webgl.scene.add(webgl.scene.box)
+
+    // lights and other scene related stuff
+    addSkybox(webgl);
+    addNaturalLight(webgl)
+
+    // postprocessing
+    const vignette = new ShaderPass({
+      vertexShader: passVert,
+      fragmentShader: vignetteFrag,
+      uniforms: {
+        tDiffuse: { type: 't', value: new THREE.Texture() },
+      },
+    })
+    webgl.composer.addPass(vignette)
+
+    // add the save screenshot button
+    if (window.DEBUG) {
+      addScreenshotButton(webgl)
+    }
+
+    // start animation loop
+    webgl.start()
+    webgl.draw()
+  })
