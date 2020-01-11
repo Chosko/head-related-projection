@@ -15,6 +15,7 @@ export default class FaceTracker extends THREE.Group {
 
     this.webcamVideo.setAttribute('width', window.innerWidth)
     this.webcamVideo.setAttribute('height', window.innerHeight)
+    this.position.setZ(1);
   }
 
   async setup () {
@@ -25,16 +26,16 @@ export default class FaceTracker extends THREE.Group {
     await faceapi.loadFaceLandmarkTinyModel('/models/face_landmark_68_tiny')
 
     this.detectorOptions = new faceapi.TinyFaceDetectorOptions()
-    this.trackFace()
-    this.updateDebug()
+
+    this.updateTracking()
   }
 
   updateDebug() {
     const debug = this.webgl.controls.debugFaceTracker
-    this.debugElement.style = debug ? "display: block" : "display: none"
+    this.debugElement.style = debug ? "visibility: visible" : "visibility: hidden"
 
     if (debug) {
-      this.debugElement.style = "display: block"
+      this.debugElement.style = "visibility: visible"
       this.webcamCanvas.width = this.webcamVideo.width
       this.webcamCanvas.height = this.webcamVideo.height
 
@@ -49,33 +50,100 @@ export default class FaceTracker extends THREE.Group {
         faceapi.draw.drawDetections(this.webcamCanvas, detectionWithLandmarksForSize)
         faceapi.draw.drawFaceLandmarks(this.webcamCanvas, detectionWithLandmarksForSize)
 
-        let lEye = detectionWithLandmarksForSize.landmarks.getLeftEye()[3]
-        let rEye = detectionWithLandmarksForSize.landmarks.getRightEye()[0]
-        let eyesMiddle = new Point(
-          0.5 * (lEye.x + rEye.x),
-          0.5 * (lEye.y + rEye.y)
-        );
+        let rawData = this.extractDetectionData(detectionWithLandmarksForSize);
 
         let ctx = this.webcamCanvas.getContext('2d')
         ctx.fillStyle = '#00ff00';
-        ctx.fillRect(lEye.x, lEye.y, 5, 5)
-        ctx.fillRect(rEye.x, rEye.y, 5, 5)
-        ctx.fillRect(eyesMiddle.x, eyesMiddle.y, 10, 10)
+        ctx.fillRect(rawData.eyeLeft.x, rawData.eyeLeft.y, 5, 5)
+        ctx.fillRect(rawData.eyeRight.x, rawData.eyeRight.y, 5, 5)
+        ctx.fillRect(rawData.eyeMiddle.x, rawData.eyeMiddle.y, 10, 10)
       }
     }
     else {
-      this.debugElement.style = "display: none"
+      this.debugElement.style = "visibility: hidden"
     }
-
   }
 
-  async trackFace() {
-    this.detection = await faceapi
+  runDetectionTask() {
+    return faceapi
       .detectSingleFace(this.webcamVideo, this.detectorOptions)
       .withFaceLandmarks(true)
+  }
 
-    this.updateDebug()
+  avgLandmark (landmarks) {
+    if (landmarks.length == 0)
+      return new Point(0, 0);
 
-    window.requestAnimationFrame(this.trackFace.bind(this))
+    let avgX = 0;
+    let avgY = 0;
+
+    landmarks.forEach(l => {
+      avgX += l.x;
+      avgY += l.y;
+    });
+
+    avgX /= landmarks.length;
+    avgY /= landmarks.length;
+
+    return new Point(avgX, avgY);
+  }
+
+  extractDetectionData(detection) {
+    let lEye = this.avgLandmark(detection.landmarks.getLeftEye())
+    let rEye = this.avgLandmark(detection.landmarks.getRightEye())
+
+    return {
+      eyeLeft: lEye,
+      eyeRight: rEye,
+      eyeMiddle: this.avgLandmark([lEye, rEye]),
+      faceArea: detection.detection.box.area
+    }
+  }
+
+  computeWorldPosition() {
+    if (this.detection) {
+      localStorage['depthBias'] = this.webgl.controls.depthBias
+      localStorage['widthBias'] = this.webgl.controls.widthBias
+      localStorage['heightBias'] = this.webgl.controls.heightBias
+      localStorage['offsetXBias'] = this.webgl.controls.offsetXBias
+      localStorage['offsetYBias'] = this.webgl.controls.offsetYBias
+
+      if (!this.rawDataHistory)
+        this.rawDataHistory = []
+
+      this.rawDataHistory.push(this.extractDetectionData(this.detection));
+      this.rawDataHistory = this.rawDataHistory.slice(Math.max(this.rawDataHistory.length - 5, 0))
+
+      let faceArea = 0;
+      let eyesX = 0;
+      let eyesY = 0;
+
+      this.rawDataHistory.forEach(rawData => {
+        faceArea += rawData.faceArea;
+        eyesX += rawData.eyeMiddle.x;
+        eyesY += rawData.eyeMiddle.y;
+      });
+
+      faceArea /= this.rawDataHistory.length;
+      eyesX /= this.rawDataHistory.length;
+      eyesY /= this.rawDataHistory.length;
+
+      eyesX = (-eyesX + this.webgl.controls.offsetXBias) / this.webgl.controls.widthBias
+      eyesY = (-eyesY + this.webgl.controls.offsetYBias) / this.webgl.controls.heightBias
+
+      // Depth
+      this.position.setZ(this.webgl.controls.depthBias / Math.sqrt(faceArea));
+      this.position.setX(eyesX)
+      this.position.setY(eyesY)
+    }
+  }
+
+  async updateTracking() {
+    this.detection = await this.runDetectionTask()
+    if (this.detection) {
+      this.computeWorldPosition()
+      this.updateDebug()
+    }
+    window.requestAnimationFrame(this.updateTracking.bind(this))
   }
 }
