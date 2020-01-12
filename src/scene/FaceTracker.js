@@ -9,12 +9,12 @@ export default class FaceTracker extends THREE.Group {
     this.webgl = webgl
     this.options = options
 
-    this.debugElement = document.getElementById('face-tracker-debug')
+    this.debugElement = document.getElementById('face-tracker')
     this.webcamVideo = document.getElementById('webcam-video')
-    this.webcamCanvas = document.getElementById('webcam-canvas')
+    this.webcamCanvas = document.getElementById('face-tracker-debug')
 
-    this.webcamVideo.setAttribute('width', window.innerWidth)
-    this.webcamVideo.setAttribute('height', window.innerHeight)
+    this.webcamVideo.setAttribute('width', this.webgl.canvas.clientWidth)
+    this.webcamVideo.setAttribute('height', this.webgl.canvas.clientHeight)
     this.position.setZ(1);
   }
 

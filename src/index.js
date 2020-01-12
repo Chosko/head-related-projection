@@ -25,7 +25,7 @@ const webgl = new WebGLApp({
   background: '#000',
   backgroundAlpha: 1,
   // show the fps counter from stats.js
-  showFps: window.DEBUG,
+  showFps: true,
   // enable postprocessing
   // ⚠️ Warning! This disables antialiasing for the scene,
   // at least until WebGL2 comes along in Three.js
@@ -34,23 +34,68 @@ const webgl = new WebGLApp({
   orbitControls: window.DEBUG && { distance: 5 },
   // Add the controls-gui inputs
   controls: {
-    useFaceTracking: true,
-    viewOffsetX: State.Slider(0.0, {
-      label: 'View Offset X',
-      min: -0.5,
-      max: 0.5,
+    Instructions: {
+      instructions: State.Raw(h => h('p', null, `
+        Hello! This is just a prototype of a face-tracking camera.
+        If this is the first time you are watching this demo,
+        please follow the instructions in order to calibrate the
+        face-tracking system. When you are finished you can close
+        this popup by clicking on "controls".
+      `)),
+      'Step 1 - Calibrate Face Offset': {
+        instructions: State.Raw(h => h('p', null, `
+          Enable the calibration markers.
+          Keep your face still in front of the green circle,
+          then adjust "OffsetX Bias" and "OffsetY Bias" until the
+          red circle completely disappears behind the green circle
+        `))
+      },
+      'Step 2 - Calibrate webcam/viewport width': {
+        instructions: State.Raw(h => h('p', null, `
+          Keep your face still in front of the green square,
+          then adjust "Width Bias" until the red square completely
+          disappears behind the green square
+        `))
+      },
+      'Step 3 - Calibrate webcam/viewport height': {
+        instructions: State.Raw(h => h('p', null, `
+          Keep your face still in front of the green triangle,
+          then adjust "Height Bias" until the red triangle completely
+          disappears behind the green triangle
+        `))
+      },
+      'Step 4 - Calibrate webcam/viewport depth': {
+        instructions: State.Raw(h => h('p', null, `
+          Keep your face still in front of the green circle,
+          then adjust "Depth Bias" until you feel that the depth
+          of the box is equal to the width of your screen.
+          Disable the calibration markers.
+        `))
+      }
+    },
+    enableCalibrationMarkers: false,
+    offsetXBias: State.Slider(+localStorage['offsetXBias'] || 0.0, {
+      label: 'OffsetX Bias',
+      min: 0.00,
+      max: 4096.00,
       step: 0.01
     }),
-    viewOffsetY: State.Slider(0.0, {
-      label: 'View Offset Y',
-      min: -0.5,// * window.innerHeight / window.innerWidth,
-      max: 0.5,// * window.innerHeight / window.innerWidth,
+    offsetYBias: State.Slider(+localStorage['offsetYBias'] || 0.0, {
+      label: 'OffsetY Bias',
+      min: 0.00,
+      max: 4096.00,
       step: 0.01
     }),
-    viewOffsetZ: State.Slider(1.0, {
-      label: 'View Offset Z',
-      min: 0.01,
-      max: 3.0,
+    widthBias: State.Slider(+localStorage['widthBias'] || 4096.0, {
+      label: 'Width Bias',
+      min: 1.00,
+      max: 4096.00,
+      step: 0.01
+    }),
+    heightBias: State.Slider(+localStorage['heightBias'] || 4096.0, {
+      label: 'Height Bias',
+      min: 1.00,
+      max: 4096.00,
       step: 0.01
     }),
     depthBias: State.Slider(+localStorage['depthBias'] || 1.0, {
@@ -59,35 +104,14 @@ const webgl = new WebGLApp({
       max: 1000.00,
       step: 0.01
     }),
-    widthBias: State.Slider(+localStorage['widthBias'] || 1.0, {
-      label: 'Width Bias',
-      min: 1.00,
-      max: 1000.00,
-      step: 0.01
-    }),
-    heightBias: State.Slider(+localStorage['heightBias'] || 1.0, {
-      label: 'Height Bias',
-      min: 1.00,
-      max: 1000.00,
-      step: 0.01
-    }),
-    offsetXBias: State.Slider(+localStorage['offsetXBias'] || 0.0, {
-      label: 'OffsetX Bias',
-      min: 0.00,
-      max: 1000.00,
-      step: 0.01
-    }),
-    offsetYBias: State.Slider(+localStorage['offsetYBias'] || 0.0, {
-      label: 'OffsetY Bias',
-      min: 0.00,
-      max: 1000.00,
-      step: 0.01
-    }),
     debugFaceTracker: State.Checkbox(false, {
       label: 'Debug Face Tracker'
-    })
-  },
-  hideControls: !window.DEBUG,
+    }),
+    resetCalibration: () => {
+      localStorage.clear()
+      window.location.reload()
+    }
+  }
   // enable Cannon.js
   // world: new CANNON.World(),
   // enable Tween.js
@@ -118,8 +142,16 @@ assets
     webgl.scene.offCenterCamera = new OffCenterCamera(webgl, {}, webgl.scene.faceTracker);
     webgl.scene.add(webgl.scene.offCenterCamera);
 
-    webgl.scene.box = new WireBox(webgl, {width: 1, height: 1, depth: 4, widthSegments: 10, heightSegments: 10, depthSegments: 40, color: 0xffffff})
-    webgl.scene.box.position.z = -2;
+    webgl.scene.box = new WireBox(webgl, {
+      width: 1,
+      height: webgl.canvas.clientHeight / webgl.canvas.clientWidth,
+      depth: 1,
+      widthSegments: 10,
+      heightSegments: 10,
+      depthSegments: 10,
+      color: 0xffffff}
+    )
+    webgl.scene.box.position.z = -0.5;
     webgl.scene.add(webgl.scene.box)
 
     // lights and other scene related stuff

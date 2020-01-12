@@ -21,20 +21,11 @@ export default class OffCenterCamera extends THREE.Group {
 
     // View Offset. It's the position of the viewer respect to the middle of the viewport.
     // The coordinates are normalized so that the width of the viewport is 1 unit. Z points towards the viewer.
-    let vo
-
-    if (this.webgl.controls.useFaceTracking)
-      vo = new THREE.Vector3(
-        this.faceTracker.position.x,
-        this.faceTracker.position.y,
-        this.faceTracker.position.z
-      )
-    else
-      vo = new THREE.Vector3(
-        this.webgl.controls.viewOffsetX,
-        this.webgl.controls.viewOffsetY,
-        this.webgl.controls.viewOffsetZ
-      )
+    let vo = new THREE.Vector3(
+      this.faceTracker.position.x,
+      this.faceTracker.position.y,
+      this.faceTracker.position.z
+    )
 
     // Set the position at viewer's point of view
     this.webgl.camera.position.set(vo.x, vo.y, vo.z) // camera position
