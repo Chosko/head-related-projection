@@ -2,18 +2,18 @@
   "name": "hrp",
   "version": "0.0.0",
   "description": "Head Related Projection",
-  "repository": "https://github.com/Chosko/hrp",
+  "repository": "https://github.com/Chosko/head-related-projection",
   "author": {
     "name": "Chosko",
     "email": "ruben.caliandro@gmail.com",
-    "url": "https://chosko.com"
+    "url": "https://chosko.com/head-related-projection"
   },
   "license": "MIT",
   "scripts": {
     "postinstall": "yarn install-tree",
     "install-tree": "hash brew && ! hash tree && brew install tree || true",
     "start": "NODE_ENV=development webpack-dev-server",
-    "prebuild": "yarn clean; yarn copy-public",
+    "prebuild": "yarn clean && yarn copy-public",
     "build": "NODE_ENV=production webpack",
     "clean": "rm -rf build",
     "copy-public": "cp -r public build",
