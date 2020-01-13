@@ -33,10 +33,10 @@ export default class WireBox extends THREE.Group {
       new THREE.CircleGeometry(0.01, 20, 0, Math.PI * 2.0),
       new THREE.MeshBasicMaterial({color: 0x00ff00 })
     )
-    this.greenCircle.position.set (0, 0, depth*0.25)
+    this.greenCircle.position.set (0, 0, depth*0.5 - 0.01)
 
     this.redCircle = new THREE.Mesh(
-      new THREE.CircleGeometry(0.02, 20, 0, Math.PI * 2.0),
+      new THREE.CircleGeometry(0.01, 20, 0, Math.PI * 2.0),
       new THREE.MeshBasicMaterial({color: 0xff0000 })
     )
     this.redCircle.position.set (0, 0, -depth*0.5)
@@ -45,7 +45,7 @@ export default class WireBox extends THREE.Group {
       new THREE.PlaneGeometry(0.02, 0.02, 1, 1),
       new THREE.MeshBasicMaterial({color: 0x00ff00 })
       )
-      this.greenSquare.position.set (-width*0.5, 0, depth*0.25)
+      this.greenSquare.position.set (-width*0.5, 0, depth*0.5 - 0.01)
 
     this.redSquare = new THREE.Mesh(
       new THREE.PlaneGeometry(0.02, 0.02, 1, 1),
@@ -57,7 +57,7 @@ export default class WireBox extends THREE.Group {
       new THREE.PlaneGeometry(0.02, 0.02, 1, 1),
       new THREE.MeshBasicMaterial({color: 0x00ff00 })
       )
-    this.greenDiamond.position.set (0, height*0.5, depth*0.25)
+    this.greenDiamond.position.set (0, height*0.5, depth*0.5 - 0.01)
     this.greenDiamond.rotation.set (0, 0, Math.PI * 0.25)
 
     this.redDiamond = new THREE.Mesh(

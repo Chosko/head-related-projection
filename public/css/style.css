@@ -15,6 +15,13 @@ canvas {
 }
 
 body>[class*='controlPanel'] {
-  max-width: 40%;
-  opacity: 0.9;
+  opacity: 0.8;
 }
+
+@media screen and (min-width: 1024px) {
+  body>[class*='controlPanel'] {
+    max-width: 40%;
+  }
+}
+
+

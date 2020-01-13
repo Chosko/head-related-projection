@@ -38,6 +38,7 @@ export default class OffCenterCamera extends THREE.Group {
     this.webgl.camera.setViewOffset(1, ar, -vo.x, vo.y, 1, ar)
 
     // Set the field of view so that the size of frustum's near face can match exactly the viewport as seen by the viewer
-    this.webgl.camera.fov = THREE.Math.radToDeg(Math.atan(0.5 / vo.z))
+    this.webgl.camera.fov = THREE.Math.radToDeg(2.0 * Math.atan(ar / (2.0 * vo.z)))
+    // console.log(this.webgl.camera.position.z)
   }
 }

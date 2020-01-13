@@ -69,7 +69,7 @@ export default class Suzanne extends THREE.Group {
     })
 
     // make it a little bigger
-    suzanne.scale.multiplyScalar(1.2)
+    suzanne.scale.multiplyScalar(0.1)
 
     this.add(suzanne)
 

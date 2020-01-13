@@ -19,7 +19,7 @@ export default class FaceTracker extends THREE.Group {
   }
 
   async setup () {
-    const webcamStream = await navigator.mediaDevices.getUserMedia({ video: {} })
+    const webcamStream = await navigator.mediaDevices.getUserMedia({ video: true })
     this.webcamVideo.srcObject = webcamStream
 
     await faceapi.loadTinyFaceDetectorModel('/models/tiny_face_detector')

@@ -10,6 +10,7 @@ import Box from "./scene/Box";
 import WireBox from './scene/WireBox'
 import OffCenterCamera from './scene/OffCenterCamera'
 import FaceTracker from './scene/FaceTracker'
+import Suzanne from './scene/Suzanne'
 
 window.DEBUG = window.location.search.includes('debug')
 
@@ -25,7 +26,7 @@ const webgl = new WebGLApp({
   background: '#000',
   backgroundAlpha: 1,
   // show the fps counter from stats.js
-  showFps: true,
+  showFps: window.DEBUG,
   // enable postprocessing
   // ⚠️ Warning! This disables antialiasing for the scene,
   // at least until WebGL2 comes along in Three.js
@@ -98,7 +99,7 @@ const webgl = new WebGLApp({
       max: 4096.00,
       step: 0.01
     }),
-    depthBias: State.Slider(+localStorage['depthBias'] || 1.0, {
+    depthBias: State.Slider(+localStorage['depthBias'] || 1000.0, {
       label: 'Depth Bias',
       min: 1.00,
       max: 1000.00,
@@ -108,6 +109,7 @@ const webgl = new WebGLApp({
       label: 'Debug Face Tracker'
     }),
     resetCalibration: () => {
+      webgl.controls = {}
       localStorage.clear()
       window.location.reload()
     }
@@ -139,7 +141,7 @@ assets
 
     webgl.scene.add(webgl.scene.faceTracker);
 
-    webgl.scene.offCenterCamera = new OffCenterCamera(webgl, {}, webgl.scene.faceTracker);
+    webgl.scene.offCenterCamera = new OffCenterCamera(webgl, {}, webgl.scene.faceTracker)
     webgl.scene.add(webgl.scene.offCenterCamera);
 
     webgl.scene.box = new WireBox(webgl, {
@@ -154,19 +156,12 @@ assets
     webgl.scene.box.position.z = -0.5;
     webgl.scene.add(webgl.scene.box)
 
+    webgl.scene.suzanne = new Suzanne(webgl, {})
+    webgl.scene.add(webgl.scene.suzanne)
+
     // lights and other scene related stuff
     addSkybox(webgl);
     addNaturalLight(webgl)
-
-    // postprocessing
-    const vignette = new ShaderPass({
-      vertexShader: passVert,
-      fragmentShader: vignetteFrag,
-      uniforms: {
-        tDiffuse: { type: 't', value: new THREE.Texture() },
-      },
-    })
-    webgl.composer.addPass(vignette)
 
     // add the save screenshot button
     if (window.DEBUG) {
