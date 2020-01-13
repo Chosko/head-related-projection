@@ -60,16 +60,15 @@ const webgl = new WebGLApp({
       },
       'Step 3 - Calibrate webcam/viewport height': {
         instructions: State.Raw(h => h('p', null, `
-          Keep your face still in front of the green triangle,
-          then adjust "Height Bias" until the red triangle completely
-          disappears behind the green triangle
+          Keep your face still in front of the green diamond,
+          then adjust "Height Bias" until the red diamond completely
+          disappears behind the green diamond
         `))
       },
       'Step 4 - Calibrate webcam/viewport depth': {
         instructions: State.Raw(h => h('p', null, `
-          Keep your face still in front of the green circle,
-          then adjust "Depth Bias" until you feel that the depth
-          of the box is equal to the width of your screen.
+          Adjust "Depth Bias" until you feel comfortable while moving
+          your head.
           Disable the calibration markers.
         `))
       }
@@ -156,7 +155,7 @@ assets
     webgl.scene.box.position.z = -0.5;
     webgl.scene.add(webgl.scene.box)
 
-    webgl.scene.suzanne = new Suzanne(webgl, {})
+    webgl.scene.suzanne = new Box(webgl, {})
     webgl.scene.add(webgl.scene.suzanne)
 
     // lights and other scene related stuff

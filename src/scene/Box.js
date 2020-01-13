@@ -12,16 +12,38 @@ export default class Box extends THREE.Group {
     // destructure and default values like you do in React
     const { color = 0x00ff00 } = this.options
 
-    const geometry = new THREE.BoxGeometry(1, 1, 1)
-    const material = new THREE.MeshBasicMaterial({ color, wireframe: true })
-    this.box = new THREE.Mesh(geometry, material)
+    const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1)
+    const material = new THREE.MeshStandardMaterial()
 
-    // add it to the group,
-    // later the group will be added to the scene
-    this.add(this.box)
+    this.position.setZ(-0.5)
+    this.boxes = []
+
+    const count = 5.0
+    for (let i = 0; i <= count; i++) {
+      for (let j = 0; j <= count; j++) {
+        for (let k = 0; k < count; k++) {
+          let box = new THREE.Mesh(geometry, material)
+          box.position.setX(i / count - 0.5)
+          box.position.setY(j / count - 0.5)
+          box.position.setZ(k / count - 0.5)
+          this.boxes.push(box);
+          this.add(box)
+        }
+      }
+    }
   }
 
   update(dt, time) {
-    this.box.rotation.y += dt * 0.5
+    this.visible = !this.webgl.controls.enableCalibrationMarkers
+    let i = 0;
+    this.boxes.forEach(box => {
+      // box.rotation.x = time - i
+      // box.rotation.y = time + i
+      // box.rotation.z = time + i
+      box.scale.x = Math.abs(Math.sin(time - i))
+      box.scale.y = Math.abs(Math.sin(time + i))
+      box.scale.z = Math.abs(Math.sin(time + i))
+      i++
+    });
   }
 }
