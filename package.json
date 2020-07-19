@@ -41,7 +41,7 @@
     "face-api.js": "^0.22.0",
     "glsl-vignette": "^1.1.0",
     "image-promise": "^7.0.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "orbit-controls": "^1.2.4",
     "p-map": "^3.0.0",
     "pretty-ms": "^5.1.0",
