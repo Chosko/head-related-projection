@@ -12,6 +12,14 @@ Requirements
 
 Getting started
 
+Install yarn globally if you don't have it:
+
+```bash
+npm install -g yarn
+```
+
+Install dependencies:
+
 ```bash
 yarn install
 ```
@@ -32,4 +40,19 @@ Build and deploy to github pages
 
 ```bash
 yarn deploy
+```
+
+### Troubleshooting
+
+If you get an error like this on Windows:
+
+```
+'NODE_ENV' is not recognized as an internal or external command,
+operable program or batch file.
+```
+
+Then you need to install `win-node-env` globally:
+
+```bash
+npm install -g win-node-env
 ```
